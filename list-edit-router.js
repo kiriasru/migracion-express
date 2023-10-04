@@ -1,5 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const listEditRouter = express.Router();
+
+
+const errorHandler = (req, res, next) => {
+  const { method, body } = req;
+
+  if ((method === 'POST' || method === 'PUT') && Object.keys(body).length === 0) {
+    return res.status(400).json({ error: 'El cuerpo de la solicitud no puede estar vacío.' });
+  }
+
+  if (method === 'POST' && (!body.nombre || !body.descripcion)) {
+    return res.status(400).json({ error: 'La solicitud POST debe incluir nombre y descripción.' });
+  }
+
+  if (method === 'PUT' && (!body.nombre || !body.descripcion)) {
+    return res.status(400).json({ error: 'La solicitud PUT debe incluir nombre y descripción.' });
+  }
+
+  next();
+};
+
+router.use(errorHandler);
 
 router.post('/create-task', (req, res) => {
   const { tarea, estado } = req.body;
@@ -19,7 +41,6 @@ router.post('/create-task', (req, res) => {
   res.status(201).json(nuevaTarea);
 });
 
-
 router.delete('/delete-task/:taskId', (req, res) => {
   const taskId = req.params.taskId;
 
@@ -34,8 +55,6 @@ router.delete('/delete-task/:taskId', (req, res) => {
 
   res.status(204).send();
 });
-
-
 
 router.put('/update-task/:taskId', (req, res) => {
   const taskId = req.params.taskId;
@@ -52,6 +71,8 @@ router.put('/update-task/:taskId', (req, res) => {
 
   res.json(tareaAActualizar);
 });
+
+listEditRouter.use(errorHandler);
 
 
 module.exports = router;
