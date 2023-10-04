@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const listEditRouter = express.Router();
 
+const validarMetodoHTTP = (req, res, next) => {
+  const metodosValidos = ['GET', 'POST', 'PUT', 'DELETE'];
+
+  if (!metodosValidos.includes(req.method)) {
+    return res.status(405).json({ error: 'Método HTTP no permitido.' });
+  }
+
+  next();
+};
 
 const errorHandler = (req, res, next) => {
   const { method, body } = req;
@@ -73,6 +82,5 @@ router.put('/update-task/:taskId', (req, res) => {
 });
 
 listEditRouter.use(errorHandler);
-
 
 module.exports = router;
