@@ -1,13 +1,77 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const fs = require('fs');
 
+dotenv.config();
 const app = express();
 const port = process.env.PORT || 8080;
 
+app.use(express.json());
 app.use(bodyParser.json());
 
+const data = JSON.parse(fs.readFileSync('data.json'));
+
+// Rutas para la gestión de tareas
+app.get('/tasks', (req, res) => {
+  res.json({ tasks: data });
+});
+
+app.post('/tasks', (req, res) => {
+  const task = {
+    id: data.length + 1,
+    title: req.body.title,
+    completed: false,
+  };
+  data.push(task);
+  res.status(201).json({ message: 'Tarea creada', task });
+});
+
+app.get('/tasks/:task_id', (req, res) => {
+  const task_id = parseInt(req.params.task_id);
+  const task = data.find((t) => t.id === task_id);
+  if (task) {
+    res.json(task);
+  } else {
+    res.status(404).json({ message: 'Tarea no encontrada' });
+  }
+});
+
+app.put('/tasks/:task_id', (req, res) => {
+  const task_id = parseInt(req.params.task_id);
+  const task = data.find((t) => t.id === task_id);
+  if (task) {
+    task.title = req.body.title;
+    task.completed = req.body.completed;
+    res.json({ message: 'Tarea actualizada', task });
+  } else {
+    res.status(404).json({ message: 'Tarea no encontrada' });
+  }
+});
+
+app.delete('/tasks/:task_id', (req, res) => {
+  const task_id = parseInt(req.params.task_id);
+  const index = data.findIndex((t) => t.id === task_id);
+  if (index !== -1) {
+    data.splice(index, 1);
+    res.json({ message: 'Tarea eliminada' });
+  } else {
+    res.status(404).json({ message: 'Tarea no encontrada' });
+  }
+});
+
+app.get('/tasks/completed', (req, res) => {
+  const completedTasks = data.filter((t) => t.completed);
+  res.json({ completedTasks });
+});
+
+app.get('/tasks/incomplete', (req, res) => {
+  const incompleteTasks = data.filter((t) => !t.completed);
+  res.json({ incompleteTasks });
+});
+
+// Rutas para autenticación
 const users = [
   { id: 1, username: 'usuario1', password: 'contraseña1' },
   { id: 2, username: 'usuario2', password: 'contraseña2' },
@@ -45,40 +109,12 @@ app.get('/ruta-protegida', (req, res) => {
   }
 });
 
-const tareas = [
-  {
-    id: 1,
-    isCompleted: false,
-    description: 'Estudiar HTML y CSS',
-  },
-  {
-    id: 2,
-    isCompleted: false,
-    description: 'Practicar con Express',
-  },
-  {
-    id: 3,
-    isCompleted: false,
-    description: 'Avanzar en la plataforma',
-  },
-  {
-    id: 4,
-    isCompleted: false,
-    description: 'Preparar la cena',
-  },
-  {
-    id: 5,
-    isCompleted: false,
-    description: 'Revisar trabajos de mis estudiantes',
-  },
-];
-
 app.get('/', (req, res) => {
   res.send('Hola, mundo');
 });
 
 app.get('/tareas', (req, res) => {
-  res.json(tareas);
+  res.json(data);
 });
 
 app.listen(port, () => {

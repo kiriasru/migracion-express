@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const listEditRouter = express.Router();
+const { v4: uuidv4 } = require('uuid');
 
 const validarMetodoHTTP = (req, res, next) => {
   const metodosValidos = ['GET', 'POST', 'PUT', 'DELETE'];
@@ -80,7 +80,5 @@ router.put('/update-task/:taskId', (req, res) => {
 
   res.json(tareaAActualizar);
 });
-
-listEditRouter.use(errorHandler);
 
 module.exports = router;
