@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
+const isValidTaskId = (taskId) => {
+  return typeof taskId === 'string' && taskId.length === 36; // Assumption: Valid task ID is a UUID.
+};
+
 const validarParametros = (req, res, next) => {
   const { taskId } = req.params;
 
